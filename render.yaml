@@ -1,0 +1,18 @@
+# Blueprint de Render para el servidor de licencias de vixpro-sofware (solo relé: SIN base de datos).
+# Render > New > Blueprint > elige este repositorio. Después copia ADMIN_KEY y LICENSE_SECRET (las genera Render).
+services:
+  - type: web
+    name: vixpro-licencias
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # UN solo proceso con muchos hilos: la cola entre los bots y el panel vive en la memoria de ese proceso.
+    startCommand: gunicorn app:app --workers 1 --threads 32 --timeout 60 --bind 0.0.0.0:$PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.3"
+      - key: ADMIN_KEY          # clave del panel de administración (Render la genera)
+        generateValue: true
+      - key: LICENSE_SECRET     # firma de las respuestas; debe ser IGUAL en el bot (ORO.py)
+        generateValue: true
